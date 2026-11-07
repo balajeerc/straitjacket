@@ -1,4 +1,4 @@
-# ts-agentic-template
+# straitjacket
 
 A starting point for a TypeScript project that will be worked on with coding
 agents. It carries the dev tooling, the lint/check pipeline, and the agent
