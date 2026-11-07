@@ -42,6 +42,7 @@
     "@types/node": "^24.13.3",
     "@vitest/coverage-v8": "^4.1.11",
     "dependency-cruiser": "^17.4.3",
+    "eslint-plugin-sonarjs": "^4.2.2",
     "jscpd": "^5.0.16",
     "knip": "^6.40.0",
     "oxlint": "^1.87.0",

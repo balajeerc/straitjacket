@@ -17,10 +17,12 @@
  * and Y in step".
  */
 import { readdirSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { basename, dirname, join, parse } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 /*
  * Walk up to the directory holding `.git` rather than trusting a fixed number of
@@ -327,5 +329,56 @@ describe('aube-workspace.yaml audit.ignore and osv-scanner.toml', () => {
 
   it('waives the same advisories in both scanners', () => {
     expect(osvIgnored).toEqual(aubeIgnored);
+  });
+});
+
+/*
+ * sonarjs runs as an oxlint JS plugin, and `.oxlintrc.json` lists its rules one
+ * by one: JSONC cannot spread the plugin's recommended config. A plugin upgrade
+ * that adds a recommended rule would leave it silently off. Every recommended
+ * rule has to be either configured (on or off) or named in an "instead of
+ * sonarjs/…" comment beside the native rule that covers it.
+ */
+const SonarjsPlugin = z.object({
+  configs: z.object({ recommended: z.object({ rules: z.record(z.string(), z.unknown()) }) }),
+  rules: z.record(z.string(), z.unknown()),
+});
+
+function loadSonarjs(): z.infer<typeof SonarjsPlugin> {
+  const required: unknown = createRequire(join(repoRoot, 'package.json'))('eslint-plugin-sonarjs');
+
+  return SonarjsPlugin.parse(required);
+}
+
+function isOn(setting: unknown): boolean {
+  const severity: unknown = Array.isArray(setting) ? setting[0] : setting;
+
+  return severity !== 'off' && severity !== 0;
+}
+
+describe('.oxlintrc.json and the sonarjs recommended set', () => {
+  const plugin = loadSonarjs();
+  const recommended = sorted(
+    Object.entries(plugin.configs.recommended.rules)
+      .filter(([, setting]) => isOn(setting))
+      .map(([name]) => name.replace(/^sonarjs\//, ''))
+  );
+  const config = read('.oxlintrc.json');
+  const configured = sorted(captures(config, /"sonarjs\/([\da-z-]+)":/g));
+  const coveredNatively = sorted(captures(config, /instead of sonarjs\/([\da-z-]+)/g));
+
+  it('finds rules on both sides, so a broken pattern is not read as agreement', () => {
+    expect(recommended.length).toBeGreaterThan(0);
+    expect(configured.length).toBeGreaterThan(0);
+  });
+
+  it('configures or replaces every recommended rule', () => {
+    const accountedFor = new Set([...configured, ...coveredNatively]);
+
+    expect(recommended.filter((name) => !accountedFor.has(name))).toEqual([]);
+  });
+
+  it('configures no rule the plugin does not have', () => {
+    expect(configured.filter((name) => !(name in plugin.rules))).toEqual([]);
   });
 });

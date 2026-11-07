@@ -78,3 +78,10 @@ packageExtensions:
   dependency-cruiser:
     dependencies:
       typescript: ^6.0.3
+  # sonarjs declares `eslint` as a peer, but never loads it: oxlint runs its
+  # rules through its own JS-plugin host. Left required, auto-installed peers
+  # would bring a full, unused ESLint back into the tree.
+  eslint-plugin-sonarjs:
+    peerDependenciesMeta:
+      eslint:
+        optional: true

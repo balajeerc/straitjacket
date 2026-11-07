@@ -73,9 +73,10 @@
   `[YYYY-MM-DD]` form is supported.
 - It is a test, not a lint rule, because oxlint has no equivalent of
   `unicorn/expiring-todo-comments`.
-- Do not enable `eslint/no-warning-comments`. It bans the marker outright,
-  which leaves no form of the comment that passes — so the only ways through
-  are deleting the note or disabling a rule, and neither leaves a record.
+- Do not enable `eslint/no-warning-comments`, `sonarjs/todo-tag` or
+  `sonarjs/fixme-tag`. Each bans the marker outright, which leaves no form of
+  the comment that passes — so the only ways through are deleting the note or
+  disabling a rule, and neither leaves a record.
 - The example lives here, in markdown, because the scan reads source comments
   and a comment demonstrating the marker would itself be an undated marker.
 
@@ -151,6 +152,11 @@
 - `oxlint-tsgolint` — 1,480 stars on `oxc-project/tsgolint`. Adopted with
   explicit sign-off on 2026-11-07. It is first-party to oxc (23k stars) and is
   the only way oxlint runs type-aware rules.
+- `eslint-plugin-sonarjs` — 1,305 stars on `SonarSource/SonarJS`. Adopted with
+  explicit sign-off on 2026-11-07. It runs as an oxlint JS plugin and covers
+  what no native rule does: cognitive complexity, ReDoS, and the Node security
+  rules. Its `eslint` peer is marked optional in `aube-workspace.yaml`, because
+  oxlint hosts it and ESLint is never loaded.
 - Add to this list rather than quietly installing. An exception nobody wrote
   down is indistinguishable from the rule not being followed.
 
@@ -222,6 +228,8 @@ with no probe behind it fails just as loudly as a probe with no row.
     against `agent_rules/`, every file;
   - `AGENTS.md` against the contents of `agent_rules/`;
   - the numbers table above against the configs that hold each number;
-  - `audit.ignore` in `aube-workspace.yaml` against `osv-scanner.toml`.
+  - `audit.ignore` in `aube-workspace.yaml` against `osv-scanner.toml`;
+  - sonarjs's recommended rules against the ones `.oxlintrc.json` configures
+    or replaces.
 - Add a guard there whenever a rule is written as "keep X and Y in step". Prose
   gets followed nine times in ten, and the tenth failure is silent.

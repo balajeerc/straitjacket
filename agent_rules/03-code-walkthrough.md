@@ -48,7 +48,7 @@ is missing from it, or when it names a file that no longer exists.
 ### Drift guards — `src/driftGuard.test.ts`
 
 - Turns the "keep X and Y in step" rules into assertions.
-- Guards six pairings today:
+- Guards seven pairings today:
   - every key in the `src/env.ts` schema is documented in `sample.env`, and
     the reverse;
   - every file under `src/` appears in the module map above, and the reverse;
@@ -60,7 +60,11 @@ is missing from it, or when it names a file that no longer exists.
   - every number quoted in the table in `agent_rules/02-coding-guidelines.md`
     matches the config that holds it;
   - the advisories waived in `aube-workspace.yaml` (`audit.ignore`) are exactly
-    the ones waived in `osv-scanner.toml` — two scanners, one reviewed list.
+    the ones waived in `osv-scanner.toml` — two scanners, one reviewed list;
+  - every rule in sonarjs's recommended set is configured in `.oxlintrc.json`,
+    or named there in an "instead of" comment beside its native stand-in.
+    JSONC cannot spread the plugin's config, so a new recommended rule would
+    otherwise arrive switched off.
 - Commented-out entries count on both sides of the env comparison. `sample.env`
   comments out anything with a default; requiring the two files to agree on
   _whether_ a key is commented would fail on the template as shipped.
@@ -109,37 +113,46 @@ is missing from it, or when it names a file that no longer exists.
 - Type-aware rules run on `oxlint-tsgolint`, built on the TypeScript 7
   compiler.
 - `categories.correctness` is on as well. It is oxlint's "definitely wrong
-  code" set, and stands in for most of what sonarjs used to catch.
-- Plugins oxlint cannot run natively were dropped, not loaded as JS plugins:
-  sonarjs, perfectionist, eslint-plugin-n. Where a native rule is close, it is
-  listed under "Closest equivalents" beside the rule it replaces.
+  code" set.
+- sonarjs runs as a JS plugin (`jsPlugins`). It was briefly dropped in the
+  move to oxlint, then brought back as a recorded star-threshold exception.
+  - JS plugins are alpha in oxlint and run in Node. The full run is still
+    under a second.
+  - oxlint hands JS plugins no type information. sonarjs's type-aware rules
+    run anyway and catch what the syntax shows — `slow-regex` flags a
+    catastrophic regex literal — but miss whatever only a type would reveal.
+  - Where a native rule covers a sonarjs rule outright, the native rule runs
+    and the sonarjs one stays off. Those native rules are tagged "instead of
+    sonarjs/…". sonarjs's same-name copies of core rules (`no-fallthrough`,
+    `no-unused-vars`, …) are off for the same reason.
+  - Some overlaps under different names remain — `sonarjs/no-exclusive-tests`
+    beside `vitest/no-focused-tests`, for one. A fault there draws two
+    reports, as it did under ESLint.
+  - Where the native rule is only a partial stand-in (the loop-counter,
+    parameterized-test, specific-assertion and exception-test rules), both
+    run.
+  - `todo-tag` and `fixme-tag` are off: they ban the marker that
+    `src/deferredWork.test.ts` allows with a date. `redundant-type-aliases` is
+    off as it was under ESLint.
+  - `no-os-command-from-path` is off in test files. A test run already trusts
+    `PATH` for `node` and `aube`.
+  - `inverted-assertion-arguments` and `no-same-argument-assert` understand
+    `assert` and chai, not vitest's `expect`.
+- perfectionist and eslint-plugin-n were dropped. Where a native rule is close,
+  it is listed under "Closest equivalents" beside the rule it replaces.
 - What was lost, with no native equivalent:
-  - `sonarjs/cognitive-complexity` — `complexity` (cyclomatic) remains;
-  - `sonarjs/slow-regex`, `sonarjs/regex-complexity` — ReDoS checks;
-  - the sonarjs Node security rules (weak hashing and ciphers, `Math.random`
-    for security, disabled TLS checks, OS command injection). Hard-coded
-    secrets are still caught by gitleaks;
-  - `sonarjs/no-identical-functions`, `no-duplicated-branches` — jscpd still
-    catches copy-paste at the file level;
   - perfectionist's ordering of import statements, exports and type members.
     The names inside a single import are still sorted, by
     `eslint/sort-imports`;
   - `n/no-unsupported-features/*` — the runtime is pinned by `mise.toml`;
   - `unicorn/better-regex`, `consistent-destructuring`, `no-for-loop`,
-    `prefer-switch`, `no-array-push-push`;
-  - the sonarjs test-quality rules with no vitest counterpart:
-    `no-same-argument-assert`, `inverted-assertion-arguments`,
-    `no-trivial-assertions`, `no-incompatible-assertion-types`,
-    `stable-tests`.
-- Partly won back by native rules, each tagged "instead of" in the config:
+    `prefer-switch`, `no-array-push-push`.
+- Two type-aware sonarjs rules stay native, because their sonarjs versions
+  would run without types:
   - `sonarjs/bitwise-operators` — `oxc/bad-bitwise-operator` catches the
     guard patterns (`obj & obj.prop`, `opts | {}`); tsc rejects `&` and `|`
     on booleans outright;
-  - `sonarjs/void-use` — `eslint/no-void`, statements excepted;
-  - the loop-counter rules — `eslint/no-unmodified-loop-condition`;
-  - `sonarjs/prefer-specific-assertions`, `test-check-exception`,
-    `parameterized-tests` — the vitest `prefer-*` matchers,
-    `require-to-throw-message` and `prefer-each`.
+  - `sonarjs/void-use` — `eslint/no-void`, statements excepted.
 - `unicorn/expiring-todo-comments` was not lost. It moved to
   `src/deferredWork.test.ts`.
 - `no-restricted-syntax` is not supported, so the `process.env` ban is

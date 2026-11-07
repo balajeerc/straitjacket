@@ -213,8 +213,12 @@ can be reversed — see _Removing what you don't want_.
   typescript-eslint `strict-type-checked` + `stylistic-type-checked`,
   `@eslint/js` recommended, promise, and the curated unicorn rules. oxlint's
   `correctness` category is on as well.
-- **Plugins oxlint cannot run natively were dropped**, not loaded as alpha JS
-  plugins: sonarjs, perfectionist, eslint-plugin-n. The closest native rules
+- **sonarjs runs as an oxlint JS plugin.** JS plugins are alpha, and they get
+  no type information, so sonarjs's type-aware rules see only what the syntax
+  shows. Where a native rule covers a sonarjs rule, the native one runs
+  instead. A drift guard fails when an upgrade adds a recommended rule nobody
+  configured.
+- **perfectionist and eslint-plugin-n were dropped.** The closest native rules
   stand in for them. What was lost outright is listed in the walkthrough.
 - **The caps are the wall, not the target**: 120 lines per function, 500 per
   file, complexity 10, depth 3, 5 params, 70 statements.
@@ -283,8 +287,9 @@ can be reversed — see _Removing what you don't want_.
 ### Deliberately not here
 
 - **Biome** — it lacks the type-aware rules this config is built on.
-- **oxlint JS plugins** — would bring sonarjs and perfectionist back, but are
-  still alpha, and cannot run type-aware plugin rules anyway.
+- **Other ESLint plugins as JS plugins** — perfectionist and eslint-plugin-n
+  could load the same way sonarjs does. Each one is another alpha dependency,
+  so each has to earn its place; so far only sonarjs has.
 - **lint-staged** — the gate is the whole check, not the changed files.
 - **`eslint-plugin-jsdoc`** — the house comment style is prose-in-header, not
   API docs. Enforcing JSDoc syntax would fight it.
