@@ -39,16 +39,19 @@ If it clears the bar, continue. If it does not:
 
 Third-party binaries are dependencies too, even though they never appear in
 `package.json`. The same check applies to the tool's repository — and once it
-passes, pin the version and verify a checksum on download.
-`scripts/installGitleaks.sh` is the pattern to copy. Never fetch `latest`, and
-never pipe a download into a shell.
+passes, pin an exact version in `mise.toml`, then run `mise lock` so
+`mise.lock` records the download's checksum. Never fetch `latest`, and never
+pipe a download into a shell.
 
 ## 3. Pick a version that will actually install
 
-`minimumReleaseAge` in `pnpm-workspace.yaml` refuses anything published in the
+`minimumReleaseAge` in `aube-workspace.yaml` refuses anything published in the
 last 30 days. It constrains **resolution**, not just verification: a `^x.y.z`
 range whose only satisfying release is from this week has nothing to fall back
-to, and the install fails outright.
+to, and — with `paranoid` making the gate strict — the install fails outright.
+
+A binary pinned in `mise.toml` follows the same window. Check its release date
+on the project's releases page.
 
 ```bash
 npm view <package> time --json
@@ -60,15 +63,21 @@ two weeks old. It drifts upward on its own once the newer release matures.
 ## 4. Install with scripts off
 
 ```bash
-pnpm add --ignore-scripts <package>          # runtime
-pnpm add -D --ignore-scripts <package>       # dev
+aube add --ignore-scripts <package>          # runtime
+aube add -D --ignore-scripts <package>       # dev
 ```
+
+aube checks every package you name against OSV's malicious-package advisories
+and challenges lookalike, low-download and newly registered names. If it
+refuses one, stop and report — do not reach for `--allow-low-downloads`.
 
 An install script is arbitrary code running as the current user, with the home
 directory — and every credential in it — in reach.
 
 If the package genuinely needs its build step, look at what that step does,
-then add it to `allowBuilds` in `pnpm-workspace.yaml`, one package at a time.
+then add it to `allowBuilds` in `aube-workspace.yaml`, one package at a time.
+It will run inside aube's build jail: no network, writes confined to the
+package.
 
 Never add to `trustPolicyExclude` to make an install pass. Each entry there is
 a reviewed exception pinned to an exact version.
@@ -76,7 +85,7 @@ a reviewed exception pinned to an exact version.
 ## 5. Confirm nothing else moved
 
 ```bash
-pnpm check
+aube run check
 ```
 
 `knip` is the one to watch: a dependency used only in a JSDoc type or a config

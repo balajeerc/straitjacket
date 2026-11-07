@@ -1,0 +1,18 @@
+# Every tool this project runs that is not an npm package, pinned in one place.
+#
+# Each version is an exact release at least 30 days old — the same maturity
+# window `minimumReleaseAge` applies to npm packages in `aube-workspace.yaml`.
+# `mise.lock` records the checksum of every download, so a re-published
+# release fails to install instead of being trusted.
+#
+# Bump a version deliberately: check its release date, then run `mise lock`.
+
+[tools]
+node = "24.21.0"
+aube = "2.7.0"
+prek = "0.5.5"
+gitleaks = "8.30.1"
+osv-scanner = "2.6.0"
+
+[settings]
+lockfile = true

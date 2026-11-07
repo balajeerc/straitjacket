@@ -1,0 +1,82 @@
+# Git hooks, run by prek (https://prek.j178.dev).
+#
+# There is no CI here, so these hooks are the whole of the gate. Be honest
+# about what that means: `git commit --no-verify` and `git push --no-verify`
+# walk straight past them, and nothing downstream will notice. It is a gate you
+# choose to keep, not one imposed on you.
+#
+# Every hook is a `local` one that calls a script this repository already
+# defines — no hook code is fetched from anywhere. The tools they need come
+# from `mise.toml`.
+#
+# Install once per clone: `aube run hooks:install`.
+
+default_install_hook_types = ["pre-commit", "commit-msg", "pre-push"]
+
+[[repos]]
+repo = "local"
+
+# Conventional Commits. prek passes Git's commit-message file as the argument.
+[[repos.hooks]]
+id = "commitlint"
+name = "commitlint"
+language = "system"
+entry = "aube exec commitlint --edit"
+stages = ["commit-msg"]
+
+# The entire check, not a staged-files subset. The edit-time hook in
+# `.claude/hooks/` is what keeps this from being slow to act on.
+[[repos.hooks]]
+id = "check"
+name = "aube run check"
+language = "system"
+entry = "aube run check"
+stages = ["pre-commit"]
+pass_filenames = false
+always_run = true
+
+# The heavier half, too slow for every commit.
+[[repos.hooks]]
+id = "secrets"
+name = "gitleaks: scan history for secrets"
+language = "system"
+entry = "aube run scan:secrets"
+stages = ["pre-push"]
+pass_filenames = false
+always_run = true
+
+[[repos.hooks]]
+id = "audit"
+name = "aube audit: known vulnerabilities"
+language = "system"
+entry = "aube run check:vulnerabilities"
+stages = ["pre-push"]
+pass_filenames = false
+always_run = true
+
+[[repos.hooks]]
+id = "osv"
+name = "osv-scanner: vulnerabilities and malicious packages"
+language = "system"
+entry = "aube run scan:osv"
+stages = ["pre-push"]
+pass_filenames = false
+always_run = true
+
+[[repos.hooks]]
+id = "build"
+name = "build"
+language = "system"
+entry = "aube run build"
+stages = ["pre-push"]
+pass_filenames = false
+always_run = true
+
+[[repos.hooks]]
+id = "mutation"
+name = "mutation testing"
+language = "system"
+entry = "aube run test:mutation"
+stages = ["pre-push"]
+pass_filenames = false
+always_run = true

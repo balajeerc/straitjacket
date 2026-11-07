@@ -36,7 +36,7 @@ Write with that in mind.
 
 ## What the linter will not let you do
 
-`@vitest/eslint-plugin` runs on every test file. It fails:
+oxlint's vitest rules run on every test file. They fail:
 
 - a test with no assertion at all;
 - `it.only` — which quietly parks the rest of the suite — and `it.skip`;
@@ -52,7 +52,7 @@ not checking what its name says it checks.
 ## Proving the test is real
 
 ```bash
-pnpm test:mutation
+aube run test:mutation
 ```
 
 Stryker changes the source one small edit at a time and reruns the suite. A
@@ -68,7 +68,7 @@ nothing asserted on what it did.
 ## Before calling it done
 
 ```bash
-pnpm check
+aube run check
 ```
 
 Deleting or skipping a test to make the gate pass fails the gate instead.

@@ -4,8 +4,7 @@ coverage
 reports
 .stryker-tmp
 .git
-.husky
 *.log
-pnpm-lock.yaml
+aube-lock.yaml
 # no extension -> Prettier cannot infer a parser
 LICENSE

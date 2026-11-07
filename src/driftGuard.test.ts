@@ -73,7 +73,7 @@ function sorted(values: Iterable<string>): string[] {
 /*
  * Horizontal whitespace only (`[\t ]`, not `\s`). With the `m` flag a `\s*`
  * sitting next to `^` can also match the newline it just anchored to, which is
- * both wrong and the ambiguity `sonarjs/slow-regex` objects to.
+ * both wrong and the kind of ambiguity that makes a pattern backtrack.
  */
 const SCHEMA_KEY = /^[\t ]*(?:\/\/[\t ]*)?([A-Z][\dA-Z_]*)[\t ]*:/gm;
 const SAMPLE_KEY = /^[\t ]*(?:#[\t ]*)?([A-Z][\dA-Z_]*)[\t ]*=/gm;
@@ -203,11 +203,11 @@ describe('AGENTS.md', () => {
  * The numbers the rules quote, against the configs that hold them.
  *
  * These are read out of the config files as text rather than by importing them.
- * Importing would be more faithful, but `eslint.config.js` has no type
- * declarations, `stryker.conf.mjs` is plain JS, and `pnpm-workspace.yaml` is not
- * JavaScript at all — so half the probes would be text anyway, and one
- * mechanism reads better than three. Prettier owns the formatting of every file
- * involved, which is what keeps the patterns stable.
+ * Importing would be more faithful, but `.oxlintrc.json` carries comments,
+ * `stryker.conf.mjs` is plain JS, and `aube-workspace.yaml` is not JavaScript at
+ * all — so most probes would be text anyway, and one mechanism reads better
+ * than three. Prettier owns the formatting of every file involved, which is
+ * what keeps the patterns stable.
  *
  * A probe that stops matching fails the same way a drifted number does: loudly,
  * naming the setting.
@@ -219,26 +219,26 @@ interface Probe {
   readonly perUnit: number;
 }
 
-/** `'max-depth': ['error', { max: 3 }]`, or unquoted for a bare identifier. */
-function eslintCap(rule: string): Probe {
+/** `"eslint/max-depth": ["error", { "max": 3 }]` — the first occurrence. */
+function oxlintCap(rule: string): Probe {
   return {
-    file: 'eslint.config.js',
-    pattern: new RegExp(`(?:'${rule}'|${rule})\\s*:[^\\]]*?max:\\s*(\\d+)`),
+    file: '.oxlintrc.json',
+    pattern: new RegExp(`"eslint/${rule}":\\s*\\[[^\\]]*?"max":\\s*(\\d+)`),
     perUnit: 1,
   };
 }
 
 const PROBES: Record<string, Probe> = {
-  complexity: eslintCap('complexity'),
+  complexity: oxlintCap('complexity'),
   'coverage.thresholds': { file: 'vitest.config.ts', pattern: /statements:\s*(\d+)/, perUnit: 1 },
-  'max-depth': eslintCap('max-depth'),
-  'max-lines': eslintCap('max-lines'),
-  'max-lines-per-function': eslintCap('max-lines-per-function'),
-  'max-params': eslintCap('max-params'),
-  'max-statements': eslintCap('max-statements'),
+  'max-depth': oxlintCap('max-depth'),
+  'max-lines': oxlintCap('max-lines'),
+  'max-lines-per-function': oxlintCap('max-lines-per-function'),
+  'max-params': oxlintCap('max-params'),
+  'max-statements': oxlintCap('max-statements'),
   // Stored in minutes, quoted in days.
   minimumReleaseAge: {
-    file: 'pnpm-workspace.yaml',
+    file: 'aube-workspace.yaml',
     pattern: /minimumReleaseAge:\s*(\d+)/,
     perUnit: 60 * 24,
   },
@@ -292,5 +292,40 @@ describe('the numbers agent_rules quotes', () => {
 
     expect(thresholds).toHaveLength(4);
     expect(new Set(thresholds).size).toBe(1);
+  });
+});
+
+/*
+ * Two scanners, one set of reviewed exceptions. `aube audit` and osv-scanner
+ * read overlapping advisory data on `pre-push`, so an advisory waived in one
+ * and not the other does not get waived — the push still fails, and the fix
+ * that suggests itself is widening whichever list is shorter without the
+ * review that granted the first entry.
+ */
+const ADVISORY_ID = /(GHSA(?:-[\da-z]{4}){3})/g;
+
+/** The `audit.ignore` block: from `ignore:` to the next unindented line. */
+function auditIgnoreBlock(source: string): string {
+  const [, block] = /^audit:\n[\t ]+ignore:\n((?:[\t ]+.*\n?)*)/m.exec(source) ?? [];
+
+  if (block === undefined) {
+    throw new Error('Could not find the audit.ignore list in aube-workspace.yaml');
+  }
+
+  return block;
+}
+
+describe('aube-workspace.yaml audit.ignore and osv-scanner.toml', () => {
+  const aubeIgnored = sorted(captures(auditIgnoreBlock(read('aube-workspace.yaml')), ADVISORY_ID));
+  const osvIgnored = sorted(
+    captures(read('osv-scanner.toml'), /^id = "([^"]+)"/gm).filter((id) => id.startsWith('GHSA'))
+  );
+
+  it('finds the ignore list on the aube side, so a broken pattern is not read as agreement', () => {
+    expect(aubeIgnored.length).toBeGreaterThan(0);
+  });
+
+  it('waives the same advisories in both scanners', () => {
+    expect(osvIgnored).toEqual(aubeIgnored);
   });
 });

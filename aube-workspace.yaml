@@ -1,0 +1,80 @@
+# ===========================================
+# aube supply-chain configuration
+# See: https://aube.sh/security
+#
+# `aube config list` is how you confirm a setting is live.
+# ===========================================
+
+# The strict bundle, in one switch. It forces on, whatever the individual keys
+# below say:
+#   - trustPolicy: no-downgrade
+#   - jailBuilds: approved build scripts run with no network and writes
+#     confined to the package (Landlock + seccomp on Linux; the build fails
+#     rather than running unjailed)
+#   - minimumReleaseAgeStrict: the age gate fails instead of falling back
+#   - strictStoreIntegrity: a tarball without `dist.integrity` fails
+#   - strictDepBuilds: an unreviewed build script fails the install
+#   - advisoryCheck: required — the OSV malicious-package check fails closed
+#     when OSV cannot be reached
+paranoid: true
+
+# Refuse packages published within the last 30 days (value is in MINUTES).
+# A malicious release is usually caught and unpublished well inside that window.
+#
+# Consequence worth knowing: this constrains RESOLUTION, not just verification.
+# A `^x.y.z` range pinned to a release from this week has no mature version to
+# fall back to, and — with `paranoid` making the gate strict — the install
+# fails outright. Range the dependency at the newest MATURED version instead,
+# and let it drift upward on its own.
+minimumReleaseAge: 43200
+
+# Transitive deps must come from the registry — no git repos, no tarball URLs.
+# aube's default; stated so that nobody has to know that.
+blockExoticSubdeps: true
+
+# Refuse an update whose publisher trust level dropped since the last release.
+# Catches account takeovers and maintainer handoffs to an unknown party.
+# `paranoid` forces this on; stated so the exclusions below have context.
+trustPolicy: no-downgrade
+
+# Reviewed exceptions to `trustPolicy`, pinned to an exact version so a later
+# release has to be re-reviewed rather than inheriting the exemption. Both are
+# transitive deps of the test tooling that changed publishing setup, not
+# ownership. Verify before adding to this list; do not grow it to make an
+# install pass.
+trustPolicyExclude:
+  - why-is-node-running@3.2.2
+  - fastq@1.20.2
+
+# `verifyDepsBeforeRun` lives in `.npmrc`: aube does not read it from here.
+
+# Packages allowed to run their build/postinstall scripts. Everything else is
+# installed with scripts off — add a package here only after looking at what
+# its build step does. `paranoid` runs the approved ones inside the jail.
+allowBuilds:
+  esbuild: true
+
+# Advisories `aube audit` should not fail the pre-push hook on. Each entry is a
+# reviewed exception, not a way to make the scan quiet — same discipline as
+# `trustPolicyExclude` above.
+#
+# All three are the same transitive `qs`, reached only through
+# `@stryker-mutator/core` -> `typed-rest-client`. They are denial-of-service
+# bugs in a query-string serialiser that runs in a dev-only mutation-testing
+# tool against no attacker-controlled input. Drop these the moment Stryker
+# ships a `typed-rest-client` bump.
+audit:
+  ignore:
+    - GHSA-q8mj-m7cp-5q26
+    - GHSA-x5fp-wj9c-mxmx
+    - GHSA-4mjr-xmp4-gh2g
+
+# dependency-cruiser parses TypeScript through the TypeScript compiler API, and
+# TypeScript 7 ships without one (it lands in 7.1). Without a compiler it
+# cruises nothing and reports "0 modules, no violations" — a pass that checked
+# nothing. This hands it a private TypeScript 6 to parse with; the project's
+# own `typescript` stays on 7. Drop it once dependency-cruiser supports 7.
+packageExtensions:
+  dependency-cruiser:
+    dependencies:
+      typescript: ^6.0.3

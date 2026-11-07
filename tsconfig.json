@@ -45,9 +45,10 @@
     "noImplicitOverride": true,
     "forceConsistentCasingInFileNames": true,
 
-    "baseUrl": ".",
+    /* No `baseUrl`: TypeScript 7 removed it. `paths` entries resolve relative
+       to this file, so they carry a leading `./`. */
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src", "scripts", "*.config.ts"]

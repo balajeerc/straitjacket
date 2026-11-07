@@ -24,5 +24,5 @@ Make the edits and refactors as you go.
 When renaming or moving files, use `git mv` so history follows. Fall back to
 `mv` only if that fails.
 
-Run `pnpm check` when you are done — the duplication, unused-code and
+Run `aube run check` when you are done — the duplication, unused-code and
 dependency-rule checks catch the refactors that moved something the wrong way.

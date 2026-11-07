@@ -1,0 +1,25 @@
+# Advisories osv-scanner should not fail the pre-push hook on.
+#
+# The same reviewed exceptions as `audit.ignore` in `aube-workspace.yaml`, and
+# for the same reason — the two scanners read overlapping advisory data, so an
+# exception granted in one and not the other just moves the failure.
+# `src/driftGuard.test.ts` holds the two lists to the same set of IDs.
+#
+# Never ignore a `MAL-*` (malicious package) entry. Remove the package.
+
+# All three are the same transitive `qs`, reached only through
+# `@stryker-mutator/core` -> `typed-rest-client`. Denial-of-service bugs in a
+# query-string serialiser, in a dev-only mutation-testing tool, against no
+# attacker-controlled input. Drop these the moment Stryker ships a
+# `typed-rest-client` bump.
+[[IgnoredVulns]]
+id = "GHSA-q8mj-m7cp-5q26"
+reason = "qs DoS via @stryker-mutator/core; dev-only, no attacker-controlled input"
+
+[[IgnoredVulns]]
+id = "GHSA-x5fp-wj9c-mxmx"
+reason = "qs DoS via @stryker-mutator/core; dev-only, no attacker-controlled input"
+
+[[IgnoredVulns]]
+id = "GHSA-4mjr-xmp4-gh2g"
+reason = "qs DoS via @stryker-mutator/core; dev-only, no attacker-controlled input"
