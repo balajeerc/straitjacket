@@ -68,6 +68,17 @@ audit:
     - GHSA-q8mj-m7cp-5q26
     - GHSA-x5fp-wj9c-mxmx
     - GHSA-4mjr-xmp4-gh2g
+    # Waiting on a fix to clear minimumReleaseAge. The reason and the expiry
+    # date for each are beside it in osv-scanner.toml, which enforces the date.
+    - GHSA-mrhx-c7xc-m3w5 # zod, until 2026-11-11
+    - GHSA-6pq8-jhm2-2vcw # qs, until 2026-11-15
+    - GHSA-qxg6-89mg-rqv8 # @vitest/mocker, until 2026-11-15
+    - GHSA-xp26-3454-mjgp # @vitest/mocker, until 2026-11-15
+    - GHSA-333x-w4r6-6crp # fast-uri, until 2026-11-19
+    - GHSA-w74x-v6f9-j3xg # fast-uri, until 2026-11-19
+    - GHSA-wjr9-j795-jxcr # fast-uri, until 2026-11-19
+    - GHSA-xhq7-xmqj-769h # fast-uri, until 2026-11-19
+    - GHSA-g3hv-75wg-m249 # minimatch, until 2026-11-27
 
 # dependency-cruiser parses TypeScript through the TypeScript compiler API, and
 # TypeScript 7 ships without one (it lands in 7.1). Without a compiler it
@@ -85,3 +96,16 @@ packageExtensions:
     peerDependenciesMeta:
       eslint:
         optional: true
+
+# Floors for transitive packages with a fixed release that has cleared
+# `minimumReleaseAge`. `aube update` only refreshes direct dependencies, and
+# `aube audit --fix=update` was seen resolving past the age gate, so a fix
+# deeper in the graph is pulled in here. Each selector matches only the
+# vulnerable range. Drop an entry once its parent requires the fixed version.
+overrides:
+  'vite@<8.2.4': ^8.2.4
+  'brace-expansion@>=4 <5.0.12': ^5.0.12
+  'fast-copy@<4.1.0': ^4.1.0
+  'smol-toml@<1.9.0': ^1.9.0
+  'source-map-js@<1.2.2': ^1.2.2
+  'fast-uri@>=3 <3.1.7': ^3.1.7

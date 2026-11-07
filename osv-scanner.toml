@@ -23,3 +23,64 @@ reason = "qs DoS via @stryker-mutator/core; dev-only, no attacker-controlled inp
 [[IgnoredVulns]]
 id = "GHSA-4mjr-xmp4-gh2g"
 reason = "qs DoS via @stryker-mutator/core; dev-only, no attacker-controlled input"
+
+# Waiting on a fix to clear `minimumReleaseAge` (30 days). Each carries
+# `ignoreUntil`: the day after its fix becomes installable. Past that date
+# osv-scanner reports it again and `src/driftGuard.test.ts` fails the commit
+# gate, so the bump cannot be forgotten.
+
+# zod is the one runtime dependency here. Not reachable today — the only schema
+# parses `process.env`, which has no arrays — but a project built on this
+# template that validates request bodies would be. Fixed in 4.6.6.
+[[IgnoredVulns]]
+id = "GHSA-mrhx-c7xc-m3w5"
+ignoreUntil = 2026-11-11
+reason = "zod array-validation memory exhaustion; only schema parses process.env; fix 4.6.6 matures 2026-11-10"
+
+# Via @stryker-mutator/core -> typed-rest-client. Dev-only; fixed in 6.16.1.
+[[IgnoredVulns]]
+id = "GHSA-6pq8-jhm2-2vcw"
+ignoreUntil = 2026-11-15
+reason = "qs stringify DoS via @stryker-mutator/core; dev-only; fix 6.16.1 matures 2026-11-14"
+
+# Both need a reachable Vite dev server (code injection) or Windows (path
+# traversal). `vitest run` in Node mode serves neither. Fixed in 4.1.12.
+[[IgnoredVulns]]
+id = "GHSA-qxg6-89mg-rqv8"
+ignoreUntil = 2026-11-15
+reason = "@vitest/mocker dev-server mock injection; no dev server is run; fix 4.1.12 matures 2026-11-14"
+
+[[IgnoredVulns]]
+id = "GHSA-xp26-3454-mjgp"
+ignoreUntil = 2026-11-15
+reason = "@vitest/mocker Windows path traversal; Linux only, no dev server; fix 4.1.12 matures 2026-11-14"
+
+# fast-uri via @commitlint/config-validator -> ajv, which only ever parses the
+# repo's own commitlint config. Fixed in 3.1.9.
+[[IgnoredVulns]]
+id = "GHSA-333x-w4r6-6crp"
+ignoreUntil = 2026-11-19
+reason = "fast-uri via commitlint's ajv; parses only our own config; fix 3.1.9 matures 2026-11-18"
+
+[[IgnoredVulns]]
+id = "GHSA-w74x-v6f9-j3xg"
+ignoreUntil = 2026-11-19
+reason = "fast-uri via commitlint's ajv; parses only our own config; fix 3.1.9 matures 2026-11-18"
+
+[[IgnoredVulns]]
+id = "GHSA-wjr9-j795-jxcr"
+ignoreUntil = 2026-11-19
+reason = "fast-uri via commitlint's ajv; parses only our own config; fix 3.1.9 matures 2026-11-18"
+
+[[IgnoredVulns]]
+id = "GHSA-xhq7-xmqj-769h"
+ignoreUntil = 2026-11-19
+reason = "fast-uri via commitlint's ajv; parses only our own config; fix 3.1.9 matures 2026-11-18"
+
+# Via @stryker-mutator/core, which pins `~10.2.4`. The fix is 11.0.1, a major
+# bump: on the expiry date, either Stryker has moved or an override across the
+# major has to be tested against a mutation run.
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2026-11-27
+reason = "minimatch glob DoS via @stryker-mutator/core; our own patterns; fix 11.0.1 matures 2026-11-26"

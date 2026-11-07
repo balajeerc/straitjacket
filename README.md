@@ -182,6 +182,9 @@ can be reversed — see _Removing what you don't want_.
 - **Vulnerability exceptions are per-advisory and reasoned**, in `audit.ignore`
   and mirrored in `osv-scanner.toml` — not a lowered severity threshold. A drift
   guard holds the two lists together.
+- **A waiver that waits on a fix expires.** It carries `ignoreUntil` in
+  `osv-scanner.toml`: the day after the fix clears the 30-day gate. On that
+  date the commit gate fails until the bump lands.
 
 ### Types
 
@@ -317,6 +320,7 @@ install from inside a git hook would rewrite the lockfile mid-commit.
 | `allowBuilds`        | the only packages permitted to run install scripts                   |
 | `audit.ignore`       | advisories `aube audit` has been told to ignore, each one reviewed   |
 | `packageExtensions`  | dependency-cruiser's private TypeScript 6 (TS 7 has no API yet)      |
+| `overrides`          | floors that pull a matured fix into a transitive dependency          |
 
 On top of those, aube itself does the following on its own:
 
@@ -329,6 +333,10 @@ Two consequences to plan around:
   `^x.y.z` range pinned to a release from this week has no mature version to
   fall back to, and the install fails outright. Range a new dependency at the
   newest **matured** version and let it drift upward on its own.
+- `aube update` refreshes direct dependencies only. A fix deeper in the graph
+  goes in `overrides`, as a floor on the vulnerable range. Do not use
+  `aube audit --fix=update`: it was seen resolving a release younger than the
+  age gate.
 - `trustPolicy: no-downgrade` fires on transitive deps you did not choose.
   `trustPolicyExclude` is the escape hatch, and each entry is pinned to an exact
   version so the next release has to be re-reviewed. Do not grow that list just

@@ -65,6 +65,11 @@ is missing from it, or when it names a file that no longer exists.
     or named there in an "instead of" comment beside its native stand-in.
     JSONC cannot spread the plugin's config, so a new recommended rule would
     otherwise arrive switched off.
+- It also fails when a waiver in `osv-scanner.toml` reaches its `ignoreUntil`
+  date. osv-scanner would resurface the advisory on its own, but only at
+  `pre-push`; failing the commit gate first means the bump is due while the
+  work is still local. Dates compare as `YYYY-MM-DD` strings, as in
+  `deferredWork.test.ts`.
 - Commented-out entries count on both sides of the env comparison. `sample.env`
   comments out anything with a default; requiring the two files to agree on
   _whether_ a key is commented would fail on the template as shipped.

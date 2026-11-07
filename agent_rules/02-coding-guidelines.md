@@ -146,6 +146,17 @@
   - Never raise `--audit-level` instead: that hides every future finding of
     that severity, not the one that was reviewed.
   - Never waive a `MAL-*` (malicious package) advisory. Remove the package.
+  - A waiver that is only waiting on a fix to clear `minimumReleaseAge`
+    carries `ignoreUntil` in `osv-scanner.toml`: the day after the fix
+    matures. On that date the commit gate fails. Bump, then delete the
+    waiver from both lists; do not push the date out.
+- `aube update` only refreshes direct dependencies. To pull a matured fix into
+  a transitive one, add a floor under `overrides` in `aube-workspace.yaml`,
+  keyed to the vulnerable range (`'vite@<8.2.4': ^8.2.4`).
+  - Never use `aube audit --fix=update`. On 2026-11-07 it resolved a zod
+    release 26 days old, past `minimumReleaseAge`.
+  - After any lockfile change, check the publish date of every newly locked
+    version. The age gate is a setting; the dates are the evidence.
 
 ### Recorded exceptions to the star threshold
 
@@ -230,6 +241,7 @@ with no probe behind it fails just as loudly as a probe with no row.
   - the numbers table above against the configs that hold each number;
   - `audit.ignore` in `aube-workspace.yaml` against `osv-scanner.toml`;
   - sonarjs's recommended rules against the ones `.oxlintrc.json` configures
-    or replaces.
+    or replaces;
+  - every `ignoreUntil` in `osv-scanner.toml` against today's date.
 - Add a guard there whenever a rule is written as "keep X and Y in step". Prose
   gets followed nine times in ten, and the tenth failure is silent.

@@ -333,6 +333,52 @@ describe('aube-workspace.yaml audit.ignore and osv-scanner.toml', () => {
 });
 
 /*
+ * A waiver that waits on a fix carries `ignoreUntil` in `osv-scanner.toml`.
+ * Past that date osv-scanner reports the advisory again, but only on
+ * `pre-push`. This fails the commit gate on the same date, so the bump is due
+ * while the work is still local — the same expiry `deferredWork.test.ts`
+ * gives a dated TODO.
+ */
+interface Waiver {
+  id: string | undefined;
+  until: string | undefined;
+}
+
+function osvWaivers(source: string): Waiver[] {
+  return source
+    .split('[[IgnoredVulns]]')
+    .slice(1)
+    .map((block) => ({
+      id: /^id = "([^"]+)"/m.exec(block)?.[1],
+      until: /^ignoreUntil = (\d{4}-\d{2}-\d{2})$/m.exec(block)?.[1],
+    }));
+}
+
+/** Expires on its date, not the day after, as a dated TODO does. */
+function hasExpired(waiver: Waiver, today: string): boolean {
+  return waiver.until !== undefined && waiver.until <= today;
+}
+
+describe('osv-scanner.toml waiver dates', () => {
+  const source = read('osv-scanner.toml');
+  const waivers = osvWaivers(source);
+
+  it('reads an id and every date, so a broken pattern is not read as no expiry', () => {
+    expect(waivers.length).toBeGreaterThan(0);
+    expect(waivers.filter((waiver) => waiver.id === undefined)).toEqual([]);
+    expect(waivers.filter((waiver) => waiver.until !== undefined)).toHaveLength(
+      captures(source, /^(ignoreUntil)\b/gm).length
+    );
+  });
+
+  it('holds no waiver on or past its ignoreUntil date', () => {
+    const today = new Date().toISOString().slice(0, 10);
+
+    expect(waivers.filter((waiver) => hasExpired(waiver, today))).toEqual([]);
+  });
+});
+
+/*
  * sonarjs runs as an oxlint JS plugin, and `.oxlintrc.json` lists its rules one
  * by one: JSONC cannot spread the plugin's recommended config. A plugin upgrade
  * that adds a recommended rule would leave it silently off. Every recommended
