@@ -121,10 +121,25 @@ is missing from it, or when it names a file that no longer exists.
     secrets are still caught by gitleaks;
   - `sonarjs/no-identical-functions`, `no-duplicated-branches` — jscpd still
     catches copy-paste at the file level;
-  - perfectionist's import, export and type-member sorting;
+  - perfectionist's ordering of import statements, exports and type members.
+    The names inside a single import are still sorted, by
+    `eslint/sort-imports`;
   - `n/no-unsupported-features/*` — the runtime is pinned by `mise.toml`;
   - `unicorn/better-regex`, `consistent-destructuring`, `no-for-loop`,
-    `prefer-switch`, `no-array-push-push`.
+    `prefer-switch`, `no-array-push-push`;
+  - the sonarjs test-quality rules with no vitest counterpart:
+    `no-same-argument-assert`, `inverted-assertion-arguments`,
+    `no-trivial-assertions`, `no-incompatible-assertion-types`,
+    `stable-tests`.
+- Partly won back by native rules, each tagged "instead of" in the config:
+  - `sonarjs/bitwise-operators` — `oxc/bad-bitwise-operator` catches the
+    guard patterns (`obj & obj.prop`, `opts | {}`); tsc rejects `&` and `|`
+    on booleans outright;
+  - `sonarjs/void-use` — `eslint/no-void`, statements excepted;
+  - the loop-counter rules — `eslint/no-unmodified-loop-condition`;
+  - `sonarjs/prefer-specific-assertions`, `test-check-exception`,
+    `parameterized-tests` — the vitest `prefer-*` matchers,
+    `require-to-throw-message` and `prefer-each`.
 - `unicorn/expiring-todo-comments` was not lost. It moved to
   `src/deferredWork.test.ts`.
 - `no-restricted-syntax` is not supported, so the `process.env` ban is

@@ -178,7 +178,20 @@
     // instead of sonarjs/no-redundant-boolean
     "eslint/no-unneeded-ternary": "error",
     // instead of sonarjs/prefer-promise-shorthand
-    "unicorn/no-useless-promise-resolve-reject": "error"
+    "unicorn/no-useless-promise-resolve-reject": "error",
+    // instead of sonarjs/bitwise-operators — `|` or `&` where `||` or `&&` was
+    // meant. Not `eslint/no-bitwise`, which bans bitwise operators outright.
+    "oxc/bad-bitwise-operator": "error",
+    // instead of sonarjs/void-use. `void promise;` as a statement stays legal:
+    // it is how a deliberately unawaited promise is marked for
+    // `no-floating-promises`.
+    "eslint/no-void": ["error", { "allowAsStatement": true }],
+    // instead of sonarjs/updated-loop-counter, sonarjs/misplaced-loop-counter
+    // (partly: a loop whose condition nothing in the body can change)
+    "eslint/no-unmodified-loop-condition": "error",
+    // instead of perfectionist/sort-named-imports — the names inside one import,
+    // not the order of the import statements. That order has no native rule.
+    "eslint/sort-imports": ["error", { "ignoreCase": true, "ignoreDeclarationSort": true }]
   },
   "overrides": [
     {
@@ -441,7 +454,18 @@
         "typescript/explicit-function-return-type": "off",
         "typescript/no-non-null-assertion": "off",
         // instead of sonarjs/hooks-before-test-cases
-        "vitest/prefer-hooks-on-top": "error"
+        "vitest/prefer-hooks-on-top": "error",
+        // instead of sonarjs/test-check-exception
+        "vitest/require-to-throw-message": "error",
+        // instead of sonarjs/prefer-specific-assertions — the matcher that says
+        // what is being checked, so a failure message says it too
+        "vitest/prefer-to-have-length": "error",
+        "vitest/prefer-to-contain": "error",
+        "vitest/prefer-equality-matcher": "error",
+        "vitest/prefer-comparison-matcher": "error",
+        // instead of sonarjs/parameterized-tests (partly: tests generated in a
+        // loop, rather than tests that merely look alike)
+        "vitest/prefer-each": "error"
       }
     }
   ]
