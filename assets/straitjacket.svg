@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 380" role="img" aria-labelledby="title">
+  <title id="title">A canvas straitjacket, sleeves crossed and buckled</title>
+  <defs>
+    <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4ecd8"/>
+      <stop offset="1" stop-color="#dccfae"/>
+    </linearGradient>
+    <linearGradient id="sleeve" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#efe5cc"/>
+      <stop offset="1" stop-color="#d3c49f"/>
+    </linearGradient>
+    <g id="buckle">
+      <rect x="-11" y="-13" width="22" height="26" rx="4" fill="none" stroke="#c9ccd1" stroke-width="5"/>
+      <rect x="-11" y="-13" width="22" height="26" rx="4" fill="none" stroke="#6b7078" stroke-width="1.5"/>
+      <line x1="0" y1="-13" x2="0" y2="13" stroke="#9aa0a8" stroke-width="3" stroke-linecap="round"/>
+    </g>
+  </defs>
+
+  <g stroke="#3b2f25" stroke-width="3" stroke-linejoin="round">
+    <!-- body -->
+    <path fill="url(#canvas)"
+          d="M128 52 L88 70 Q68 78 68 104 L76 304 Q78 332 108 334 L212 334 Q242 332 244 304 L252 104 Q252 78 232 70 L192 52 Z"/>
+    <!-- stand collar -->
+    <path fill="#e6dbbf" d="M126 34 Q160 24 194 34 L196 62 Q160 72 124 62 Z"/>
+    <path fill="none" stroke-width="2" stroke-dasharray="4 4" d="M130 56 Q160 64 190 56"/>
+
+    <!-- centre seam -->
+    <path fill="none" stroke-width="2" stroke-dasharray="5 5" d="M160 70 L160 332"/>
+
+    <!-- chest straps -->
+    <rect x="72" y="104" width="176" height="18" fill="#6e4630"/>
+    <rect x="73" y="144" width="174" height="18" fill="#6e4630"/>
+
+    <!-- upper sleeves -->
+    <path fill="url(#sleeve)"
+          d="M78 74 C52 80 42 100 42 128 L40 230 C40 252 56 262 76 260 L98 256 L100 118 C100 96 94 80 78 74 Z"/>
+    <path fill="url(#sleeve)"
+          d="M242 74 C268 80 278 100 278 128 L280 230 C280 252 264 262 244 260 L222 256 L220 118 C220 96 226 80 242 74 Z"/>
+    <path fill="none" stroke-width="2" stroke-dasharray="5 5" d="M60 96 L56 236 M260 96 L264 236"/>
+  </g>
+
+  <!-- crossed forearms: right arm passes under, left arm over -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M256 236 Q172 268 80 204" stroke="#3b2f25" stroke-width="50"/>
+    <path d="M256 236 Q172 268 80 204" stroke="#ddd0b0" stroke-width="44"/>
+    <path d="M64 236 Q148 268 240 204" stroke="#3b2f25" stroke-width="50"/>
+    <path d="M64 236 Q148 268 240 204" stroke="#e9dfc4" stroke-width="44"/>
+    <path d="M70 236 Q150 262 234 208" stroke="#3b2f25" stroke-width="2" stroke-dasharray="5 5"/>
+  </g>
+
+  <!-- sleeve-end straps running round to the back -->
+  <g stroke="#3b2f25" stroke-width="3" stroke-linejoin="round">
+    <path fill="#6e4630" d="M232 184 L268 166 L276 182 L242 202 Z"/>
+    <path fill="#6e4630" d="M88 184 L52 166 L44 182 L78 202 Z"/>
+  </g>
+
+  <!-- crotch strap -->
+  <g stroke="#3b2f25" stroke-width="3">
+    <rect x="151" y="300" width="18" height="66" rx="3" fill="#6e4630"/>
+  </g>
+
+  <!-- buckles -->
+  <use href="#buckle" x="200" y="113"/>
+  <use href="#buckle" x="120" y="153"/>
+  <use href="#buckle" x="160" y="348"/>
+  <use href="#buckle" x="262" y="174" transform="rotate(-27 262 174)"/>
+  <use href="#buckle" x="58" y="174" transform="rotate(27 58 174)"/>
+</svg>

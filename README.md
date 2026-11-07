@@ -1,10 +1,76 @@
-# straitjacket
+<p align="center">
+  <img src="assets/straitjacket.svg" alt="A canvas straitjacket, sleeves crossed and buckled" width="220">
+</p>
 
-A starting point for a TypeScript project that will be worked on with coding
-agents. It carries the dev tooling, the lint/check pipeline, and the agent
-rules and skills — and almost no application code.
+<h1 align="center">straitjacket</h1>
 
-## What's in it
+<p align="center">
+  <strong>A TypeScript template that keeps coding agents from wriggling out of the rules.</strong>
+</p>
+
+<p align="center">
+  TypeScript 7 · oxlint · Vitest · Stryker · aube · prek
+</p>
+
+---
+
+## Why
+
+Coding agents are fast, tireless, and very good at _looking_ done. Left loose, they will:
+
+- write a test that runs the line but asserts nothing;
+- add a lint-disable comment and call the warning fixed;
+- lower a coverage threshold to get to green;
+- install a package that was published yesterday;
+- change the code and leave the docs describing the old version;
+- leave a `TODO` that nobody ever comes back to.
+
+straitjacket makes each of those fail loudly, on your machine, before the commit lands.
+It carries the tooling, the gate, and the agent rules and skills — and almost no application code.
+
+## The buckles
+
+| When an agent tries to…                     | …this stops it                                                       |
+| ------------------------------------------- | -------------------------------------------------------------------- |
+| silence a lint finding                      | `oxlint-disable` is banned; an unused directive is itself an error   |
+| ship a test with no assertion, or `it.only` | oxlint's vitest rules lint the tests themselves                      |
+| cover a line without really testing it      | Stryker mutation testing, on `pre-push`                              |
+| relax a cap or threshold quietly            | a drift guard checks every quoted number against its config          |
+| let the docs drift from the code            | drift guards on the module map, `sample.env` and the rule mirrors    |
+| park a `TODO` forever                       | an undated or expired deferral fails the gate                        |
+| install something fresh, scripted or shady  | a 30-day release-age gate, scripts off, OSV malicious-package checks |
+| write a 300-line function                   | 120 lines per function, complexity 10, depth 3                       |
+| reach for `process.env` or `console.log`    | both are lint errors; `env` and `logger` are the way out             |
+| commit a secret                             | gitleaks scans the whole history on `pre-push`                       |
+
+Like any straitjacket, it only works if the buckles are done up. `--no-verify` slips straight out
+of both git hooks — see [_The gate is two git hooks_](#the-gate-is-two-git-hooks).
+
+## Getting started
+
+```bash
+mise install                          # Node, aube, prek, gitleaks, osv-scanner
+aube install --ignore-scripts
+aube run hooks:install                # the git hooks; nothing installs them for you
+aube run check
+```
+
+`aube run hooks:install` is a separate step on purpose. Nothing installs git
+hooks as a side effect of a dependency install — that would be a lifecycle
+script, and installs run with scripts off. Without it, the hooks never run.
+`ls .git/hooks` should show `pre-commit`, `commit-msg` and `pre-push`; check
+that if a commit sails through with a failing check.
+
+Then:
+
+1. Set `name` in `package.json`.
+2. Fill in `agent_rules/01-overview.md` — what this project is.
+3. Keep `agent_rules/03-code-walkthrough.md` current as the code appears.
+4. Add your module boundaries to Section 2 of `.dependency-cruiser.cjs`.
+5. Put your real variables in `src/env.ts` and `sample.env`.
+6. Replace `src/index.ts`.
+
+## What's in the box
 
 ### Dev tooling
 
@@ -68,30 +134,6 @@ The hook calls `node_modules/.bin` directly, never a package manager. A package
 manager's `exec` may decide the tree is stale and install before running — from
 a hook that fires on every edit, with nobody watching.
 
-## Getting started
-
-```bash
-mise install                          # Node, aube, prek, gitleaks, osv-scanner
-aube install --ignore-scripts
-aube run hooks:install                # the git hooks; nothing installs them for you
-aube run check
-```
-
-`aube run hooks:install` is a separate step on purpose. Nothing installs git
-hooks as a side effect of a dependency install — that would be a lifecycle
-script, and installs run with scripts off. Without it, the hooks never run.
-`ls .git/hooks` should show `pre-commit`, `commit-msg` and `pre-push`; check
-that if a commit sails through with a failing check.
-
-Then:
-
-1. Set `name` in `package.json`.
-2. Fill in `agent_rules/01-overview.md` — what this project is.
-3. Keep `agent_rules/03-code-walkthrough.md` current as the code appears.
-4. Add your module boundaries to Section 2 of `.dependency-cruiser.cjs`.
-5. Put your real variables in `src/env.ts` and `sample.env`.
-6. Replace `src/index.ts`.
-
 ## Commands
 
 | Command                          | What it does                                                     |
@@ -152,7 +194,7 @@ output that looks verified without being verified.
 ## Every opinionated choice in here
 
 None of this is a default. Each line is a position someone took, and each one
-can be reversed — see _Removing what you don't want_.
+can be reversed — see [_Loosening the straps_](#loosening-the-straps).
 
 ### Package management
 
@@ -346,9 +388,9 @@ There is no Dependabot. `aube outdated` is the manual equivalent; anything it
 proposes still has to clear the 30-day window and the star bar. The same
 applies to the binaries in `mise.toml`.
 
-## Removing what you don't want
+## Loosening the straps
 
-Everything is independent:
+Every buckle comes undone on its own:
 
 - Don't want duplication checks? Drop `check:code-duplication` from `check` and
   remove `jscpd`.
@@ -369,3 +411,7 @@ Everything is independent:
 Nothing here assumes the project ships to a registry. When it does, add
 `publint` and `@arethetypeswrong/cli` to `aube run check` — they catch broken
 `exports` maps and type resolution that no test exercises.
+
+## License
+
+BSD 2-Clause. See [`LICENSE`](./LICENSE).
